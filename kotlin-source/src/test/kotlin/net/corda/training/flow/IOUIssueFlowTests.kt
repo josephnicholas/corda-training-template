@@ -62,28 +62,28 @@ class IOUIssueFlowTests {
      * - Sign the transaction and convert it to a [SignedTransaction] using the [serviceHub.signInitialTransaction] method.
      * - Return the [SignedTransaction].
      */
-//    @Test
-//    fun flowReturnsCorrectlyFormedPartiallySignedTransaction() {
-//        val lender = a.info.chooseIdentityAndCert().party
-//        val borrower = b.info.chooseIdentityAndCert().party
-//        val iou = IOUState(10.POUNDS, lender, borrower)
-//        val flow = IOUIssueFlow(iou)
-//        val future = a.startFlow(flow)
-//        mockNetwork.runNetwork()
-//        // Return the unsigned(!) SignedTransaction object from the IOUIssueFlow.
-//        val ptx: SignedTransaction = future.getOrThrow()
-//        // Print the transaction for debugging purposes.
-//        println(ptx.tx)
-//        // Check the transaction is well formed...
-//        // No outputs, one input IOUState and a command with the right properties.
-//        assert(ptx.tx.inputs.isEmpty())
-//        assert(ptx.tx.outputs.single().data is IOUState)
-//        val command = ptx.tx.commands.single()
-//        assert(command.value is IOUContract.Commands.Issue)
-//        assert(command.signers.toSet() == iou.participants.map { it.owningKey }.toSet())
-//        ptx.verifySignaturesExcept(borrower.owningKey,
-//                mockNetwork.defaultNotaryNode.info.legalIdentitiesAndCerts.first().owningKey)
-//    }
+    @Test
+    fun flowReturnsCorrectlyFormedPartiallySignedTransaction() {
+        val lender = a.info.chooseIdentityAndCert().party
+        val borrower = b.info.chooseIdentityAndCert().party
+        val iou = IOUState(10.POUNDS, lender, borrower)
+        val flow = IOUIssueFlow(iou)
+        val future = a.startFlow(flow)
+        mockNetwork.runNetwork()
+        // Return the unsigned(!) SignedTransaction object from the IOUIssueFlow.
+        val ptx: SignedTransaction = future.getOrThrow()
+        // Print the transaction for debugging purposes.
+        println(ptx.tx)
+        // Check the transaction is well formed...
+        // No outputs, one input IOUState and a command with the right properties.
+        assert(ptx.tx.inputs.isEmpty())
+        assert(ptx.tx.outputs.single().data is IOUState)
+        val command = ptx.tx.commands.single()
+        assert(command.value is IOUContract.Commands.Issue)
+        assert(command.signers.toSet() == iou.participants.map { it.owningKey }.toSet())
+        ptx.verifySignaturesExcept(borrower.owningKey,
+                mockNetwork.defaultNotaryNode.info.legalIdentitiesAndCerts.first().owningKey)
+    }
 
     /**
      * Task 2.
@@ -92,26 +92,26 @@ class IOUIssueFlowTests {
      * Hint: You can verify on the builder directly prior to finalizing the transaction. This way
      * you can confirm the transaction prior to making it immutable with the signature.
      */
-//    @Test
-//    fun flowReturnsVerifiedPartiallySignedTransaction() {
-//        // Check that a zero amount IOU fails.
-//        val lender = a.info.chooseIdentityAndCert().party
-//        val borrower = b.info.chooseIdentityAndCert().party
-//        val zeroIou = IOUState(0.POUNDS, lender, borrower)
-//        val futureOne = a.startFlow(IOUIssueFlow(zeroIou))
-//        mockNetwork.runNetwork()
-//        assertFailsWith<TransactionVerificationException> { futureOne.getOrThrow() }
-//        // Check that an IOU with the same participants fails.
-//        val borrowerIsLenderIou = IOUState(10.POUNDS, lender, lender)
-//        val futureTwo = a.startFlow(IOUIssueFlow(borrowerIsLenderIou))
-//        mockNetwork.runNetwork()
-//        assertFailsWith<TransactionVerificationException> { futureTwo.getOrThrow() }
-//        // Check a good IOU passes.
-//        val iou = IOUState(10.POUNDS, lender, borrower)
-//        val futureThree = a.startFlow(IOUIssueFlow(iou))
-//        mockNetwork.runNetwork()
-//        futureThree.getOrThrow()
-//    }
+    @Test
+    fun flowReturnsVerifiedPartiallySignedTransaction() {
+        // Check that a zero amount IOU fails.
+        val lender = a.info.chooseIdentityAndCert().party
+        val borrower = b.info.chooseIdentityAndCert().party
+        val zeroIou = IOUState(0.POUNDS, lender, borrower)
+        val futureOne = a.startFlow(IOUIssueFlow(zeroIou))
+        mockNetwork.runNetwork()
+        assertFailsWith<TransactionVerificationException> { futureOne.getOrThrow() }
+        // Check that an IOU with the same participants fails.
+        val borrowerIsLenderIou = IOUState(10.POUNDS, lender, lender)
+        val futureTwo = a.startFlow(IOUIssueFlow(borrowerIsLenderIou))
+        mockNetwork.runNetwork()
+        assertFailsWith<TransactionVerificationException> { futureTwo.getOrThrow() }
+        // Check a good IOU passes.
+        val iou = IOUState(10.POUNDS, lender, borrower)
+        val futureThree = a.startFlow(IOUIssueFlow(iou))
+        mockNetwork.runNetwork()
+        futureThree.getOrThrow()
+    }
 
     /**
      * IMPORTANT: Review the [CollectSignaturesFlow] before continuing here.
