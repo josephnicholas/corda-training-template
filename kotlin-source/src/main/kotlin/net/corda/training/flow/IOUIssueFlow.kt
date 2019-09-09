@@ -4,14 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.requireThat
-import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.InitiatedBy
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.SignTransactionFlow
-import net.corda.core.flows.StartableByRPC
+import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.training.contract.IOUContract
@@ -36,7 +29,16 @@ class IOUIssueFlow(val state: IOUState) : FlowLogic<SignedTransaction>() {
         // Verify transaction
         txBuilder.verify(serviceHub);
 
-        return serviceHub.signInitialTransaction(txBuilder);
+        // Get set of signers required from the participants who are not the node.
+        // Signers except the flow initiator.
+        val sessions = (state.participants - ourIdentity).map { initiateFlow(it)  }.toSet();
+
+        val pendingTx = serviceHub.signInitialTransaction(txBuilder);
+
+        // Start CollectSignaturesFlow subflow
+        val signedTx = subFlow(CollectSignaturesFlow(pendingTx, sessions));
+
+        return subFlow(FinalityFlow(signedTx, sessions));
     }
 }
 
@@ -45,15 +47,17 @@ class IOUIssueFlow(val state: IOUState) : FlowLogic<SignedTransaction>() {
  * The signing is handled by the [SignTransactionFlow].
  */
 @InitiatedBy(IOUIssueFlow::class)
-class IOUIssueFlowResponder(val flowSession: FlowSession): FlowLogic<Unit>() {
+class IOUIssueFlowResponder(val flowSession: FlowSession): FlowLogic<SignedTransaction>() {
     @Suspendable
-    override fun call() {
+    override fun call(): SignedTransaction {
         val signedTransactionFlow = object : SignTransactionFlow(flowSession) {
             override fun checkTransaction(stx: SignedTransaction) = requireThat {
                 val output = stx.tx.outputs.single().data
                 "This must be an IOU transaction" using (output is IOUState)
             }
         }
-        subFlow(signedTransactionFlow)
+        val signedtx = subFlow(signedTransactionFlow);
+
+        return subFlow(ReceiveFinalityFlow(otherSideSession = flowSession, expectedTxId = signedtx.id));
     }
 }
