@@ -138,17 +138,17 @@ class IOUIssueFlowTests {
      * Using this flow you abstract away all the back-and-forth communication required for parties to sign a
      * transaction.
      */
-//    @Test
-//    fun flowReturnsTransactionSignedByBothParties() {
-//        val lender = a.info.chooseIdentityAndCert().party
-//        val borrower = b.info.chooseIdentityAndCert().party
-//        val iou = IOUState(10.POUNDS, lender, borrower)
-//        val flow = IOUIssueFlow(iou)
-//        val future = a.startFlow(flow)
-//        mockNetwork.runNetwork()
-//        val stx = future.getOrThrow()
-//        stx.verifyRequiredSignatures()
-//    }
+    @Test
+    fun flowReturnsTransactionSignedByBothParties() {
+        val lender = a.info.chooseIdentityAndCert().party
+        val borrower = b.info.chooseIdentityAndCert().party
+        val iou = IOUState(10.POUNDS, lender, borrower)
+        val flow = IOUIssueFlow(iou)
+        val future = a.startFlow(flow)
+        mockNetwork.runNetwork()
+        val stx = future.getOrThrow()
+        stx.verifyRequiredSignatures()
+    }
 
     /**
      * Task 4.
@@ -162,22 +162,22 @@ class IOUIssueFlowTests {
      *   inputs in the transaction that could be double spent! If we added a timestamp to this transaction then we
      *   would require the notary's signature as notaries act as a timestamping authority.
      */
-//    @Test
-//    fun flowRecordsTheSameTransactionInBothPartyVaults() {
-//        val lender = a.info.chooseIdentityAndCert().party
-//        val borrower = b.info.chooseIdentityAndCert().party
-//        val iou = IOUState(10.POUNDS, lender, borrower)
-//        val flow = IOUIssueFlow(iou)
-//        val future = a.startFlow(flow)
-//        mockNetwork.runNetwork()
-//        val stx = future.getOrThrow()
-//        println("Signed transaction hash: ${stx.id}")
-//        listOf(a, b).map {
-//            it.services.validatedTransactions.getTransaction(stx.id)
-//        }.forEach {
-//                    val txHash = (it as SignedTransaction).id
-//                    println("$txHash == ${stx.id}")
-//                    assertEquals(stx.id, txHash)
-//                }
-//    }
+    @Test
+    fun flowRecordsTheSameTransactionInBothPartyVaults() {
+        val lender = a.info.chooseIdentityAndCert().party
+        val borrower = b.info.chooseIdentityAndCert().party
+        val iou = IOUState(10.POUNDS, lender, borrower)
+        val flow = IOUIssueFlow(iou)
+        val future = a.startFlow(flow)
+        mockNetwork.runNetwork()
+        val stx = future.getOrThrow()
+        println("Signed transaction hash: ${stx.id}")
+        listOf(a, b).map {
+            it.services.validatedTransactions.getTransaction(stx.id)
+        }.forEach {
+                    val txHash = (it as SignedTransaction).id
+                    println("$txHash == ${stx.id}")
+                    assertEquals(stx.id, txHash)
+                }
+    }
 }
